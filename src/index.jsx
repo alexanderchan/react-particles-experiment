@@ -1,20 +1,14 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Provider } from 'react-redux';
-import { createStore } from 'redux';
 import d3 from 'd3';
 
-import particlesApp from './reducers';
+import {particlesStore as store} from './reducers/';
 import AppContainer from './containers/AppContainer';
 import { resizeScreen } from './actions';
 
-let store = createStore(particlesApp);
-
 ReactDOM.render(
-    <Provider store={store}>
-        <AppContainer />
-    </Provider>,
+    <AppContainer store={store} />,
     document.querySelectorAll('.main')[0]
 );
 

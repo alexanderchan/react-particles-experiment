@@ -1,12 +1,14 @@
 
 import React, { PropTypes, Component } from 'react';
 import ReactDOM from 'react-dom';
+import {observer} from 'mobx-react';
 import d3 from 'd3';
 
 import Particles from './Particles';
 import Footer from './Footer';
 import Header from './Header';
 
+@observer
 class App extends Component {
     componentDidMount() {
         let svg = d3.select(this.refs.svg);
@@ -48,10 +50,6 @@ class App extends Component {
     }
 
     render() {
-        let timestamp = new Date().getTime(),
-            lastTick = this.props.lastTick,
-            fps = 600000/(timestamp-lastTick);
-
         return (
             <div onMouseDown={e => this.props.startTicker()} style={{overflow: 'hidden'}}>
                  <Header />
@@ -61,8 +59,7 @@ class App extends Component {
                       style={{background: 'rgba(124, 224, 249, .3)'}}>
                      <Particles particles={this.props.particles} />
                  </svg>
-                 <Footer N={this.props.particles.length}
-                         fps={fps} />
+                 <Footer particles={this.props.particles} />
              </div>
         );
     }

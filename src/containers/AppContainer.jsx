@@ -1,27 +1,18 @@
 
-import { connect } from 'react-redux';
 import React, { Component } from 'react';
+import {observer} from 'mobx-react';
 
 import App from '../components';
 import { tickTime, tickerStarted, startParticles, stopParticles, updateMousePos, createParticles } from '../actions';
 
+
+@observer
 class AppContainer extends Component {
-    componentDidMount() {
-        const { store } = this.context;
-        this.unsubscribe = store.subscribe(() =>
-            this.forceUpdate()
-        );
-    }
-
-    componentWillUnmount() {
-        this.unsubscribe();
-    }
-
     startTicker() {
-        const { store } = this.context;
+        const { store } = this.props;
 
         let ticker = () => {
-            if (store.getState().tickerStarted) {
+            if (store.tickerStarted) {
                 this.maybeCreateParticles();
                 store.dispatch(tickTime());
 
@@ -29,7 +20,7 @@ class AppContainer extends Component {
             }
         };
 
-        if (!store.getState().tickerStarted) {
+        if (!store.tickerStarted) {
             console.log("Starting ticker");
             store.dispatch(tickerStarted());
             ticker();
@@ -37,23 +28,23 @@ class AppContainer extends Component {
     }
 
     startParticles() {
-        const { store } = this.context;
+        const { store } = this.props;
         store.dispatch(startParticles());
     }
 
     stopParticles() {
-        const { store } = this.context;
+        const { store } = this.props;
         store.dispatch(stopParticles());
     }
 
     updateMousePos(x, y) {
-        const { store } = this.context;
+        const { store } = this.props;
         store.dispatch(updateMousePos(x, y));
     }
 
     maybeCreateParticles() {
-        const { store } = this.context;
-        const state = store.getState();
+        const { store } = this.props;
+        const state = store;
         const [x, y] = state.mousePos;
 
         if (state.generateParticles) {
@@ -62,8 +53,8 @@ class AppContainer extends Component {
     }
 
     render() {
-        const { store } = this.context;
-        const state = store.getState();
+        const { store } = this.props;
+        const state = store;
 
         return (
             <App {...state}

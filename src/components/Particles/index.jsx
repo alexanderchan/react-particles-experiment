@@ -1,22 +1,19 @@
 
 import React, { PropTypes } from 'react';
+import {observer} from 'mobx-react';
 
 import Particle from './Particle';
 
-const Particles = ({ particles }) => (
+const Particles = observer(({ particles }) => (
     <g>{particles.map(particle =>
         <Particle key={particle.id}
-                  {...particle} />
+                  particle={particle} />
         )}
     </g>
-);
+));
 
 Particles.propTypes = {
-    particles: PropTypes.arrayOf(PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        x: PropTypes.number.isRequired,
-        y: PropTypes.number.isRequired
-    }).isRequired).isRequired
+    particles: React.PropTypes.object.isRequired
 };
 
 export default Particles;

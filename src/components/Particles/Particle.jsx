@@ -1,13 +1,12 @@
-
 import React, { PropTypes } from 'react';
+import {observer} from 'mobx-react';
 
-const Particle = ({ x, y }) => (
+const Particle = observer(({ particle: { x, y } }) => (
     <circle cx={x} cy={y} r="1.8" />
-);
+));
 
 Particle.propTypes = {
-    x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired
+    particle: PropTypes.object.isRequired
 };
 
 export default Particle;
