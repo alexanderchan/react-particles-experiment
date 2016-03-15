@@ -1,4 +1,4 @@
-import {observable, transaction} from "mobx";
+import {observable, transaction, extendObservable} from "mobx";
 
 import d3 from 'd3';
 
@@ -8,7 +8,6 @@ const Gravity = 0.5,
 
 export const particlesStore = observable({
     particles: [],
-    particleIndex: 0,
     particlesPerTick: 5,
     svgWidth: 800,
     svgHeight: 600,
@@ -34,31 +33,37 @@ particlesStore.dispatch = function(action) {
             case 'CREATE_PARTICLES':
                 let i;
                 for (i = 0; i < action.N; i++) {
-                    let particle = {id: state.particleIndex+i,
-                                    x: action.x,
-                                    y: action.y};
-
-                    particle.vector = [particle.id%2 ? -randNormal() : randNormal(),
-                                    -randNormal2()*3.3];
-
-                    state.particles.unshift(particle);
+                    let particle = state.particles.find(p => !p.inUse);
+                    if (!particle) {
+                        particle = { 
+                            id: state.particles.length
+                        };
+                        state.particles.push(particle);
+                    }
+                    extendObservable(particle, {
+                        inUse: true,
+                        x: action.x,
+                        y: action.y,
+                        vector: [particle.id%2 ? -randNormal() : randNormal(),
+                                    -randNormal2()*3.3]
+                    });
                 }
-
-                state.particleIndex += i + 1;
                 break;
             case 'UPDATE_MOUSE_POS':
                 state.mousePos = [action.x, action.y];
                 break;
             case 'TIME_TICK':
                 let {svgWidth, svgHeight} = state;
-                state.particles = state.particles.filter((p) =>
-                    !(p.y > svgHeight || p.x < 0 || p.x > svgWidth)
-                );
                 state.particles.forEach((p) => {
-                    let [vx, vy] = p.vector;
-                    p.x += vx;
-                    p.y += vy;
-                    p.vector[1] += Gravity;
+                    if (p.inUse) {
+                        let [vx, vy] = p.vector;
+                        p.x += vx;
+                        p.y += vy;
+                        p.vector[1] += Gravity;
+                        if (p.y > svgHeight || p.x < 0 || p.x > svgWidth) {
+                            p.inUse = false;
+                        }
+                    }
                 });
                 break;
             case 'RESIZE_SCREEN':
