@@ -15,11 +15,11 @@ class App extends Component {
 
         svg.on('mousedown', () => {
             this.updateMousePos();
-            this.props.startParticles();
+            this.props.store.startParticles();
         });
         svg.on('touchstart', () => {
             this.updateTouchPos();
-            this.props.startParticles();
+            this.props.store.startParticles();
         });
         svg.on('mousemove', () => {
             this.updateMousePos();
@@ -28,50 +28,73 @@ class App extends Component {
             this.updateTouchPos();
         });
         svg.on('mouseup', () => {
-            this.props.stopParticles();
+            this.props.store.stopParticles();
         });
         svg.on('touchend', () => {
-            this.props.stopParticles();
+            this.props.store.stopParticles();
         });
         svg.on('mouseleave', () => {
-            this.props.stopParticles();
+            this.props.store.stopParticles();
         });
 
     }
 
     updateMousePos() {
         let [x, y] = d3.mouse(this.refs.svg);
-        this.props.updateMousePos(x, y);
+        this.props.store.updateMousePos(x, y);
     }
 
     updateTouchPos() {
         let [x, y] = d3.touches(this.refs.svg)[0];
-        this.props.updateMousePos(x, y);
+        this.props.store.updateMousePos(x, y);
+    }
+
+    startTicker() {
+        const { store } = this.props;
+
+        let ticker = () => {
+            if (store.tickerStarted) {
+                this.maybeCreateParticles();
+                store.timeTick();
+
+                window.requestAnimationFrame(ticker);
+            }
+        };
+
+        if (!store.tickerStarted) {
+            console.log("Starting ticker");
+            store.startTicker();
+            ticker();
+        }
+    }
+
+    maybeCreateParticles() {
+        const { store } = this.props;
+        const [x, y] = store.mousePos;
+
+        if (store.generateParticles) {
+            store.createParticles(store.particlesPerTick, x, y);
+        }
     }
 
     render() {
         return (
-            <div onMouseDown={e => this.props.startTicker()} style={{overflow: 'hidden'}}>
+            <div onMouseDown={::this.startTicker} style={{overflow: 'hidden'}}>
                  <Header />
-                 <svg width={this.props.svgWidth}
-                      height={this.props.svgHeight}
+                 <svg width={this.props.store.svgWidth}
+                      height={this.props.store.svgHeight}
                       ref="svg"
                       style={{background: 'rgba(124, 224, 249, .3)'}}>
-                     <Particles particles={this.props.particles} />
+                     <Particles particles={this.props.store.particles} />
                  </svg>
-                 <Footer particles={this.props.particles} />
+                 <Footer particles={this.props.store.particles} />
              </div>
         );
     }
 }
 
 App.propTypes = {
-    svgWidth: PropTypes.number.isRequired,
-    svgHeight: PropTypes.number.isRequired,
-    startTicker: PropTypes.func.isRequired,
-    startParticles: PropTypes.func.isRequired,
-    stopParticles: PropTypes.func.isRequired,
-    updateMousePos: PropTypes.func.isRequired
+    store: PropTypes.object.isRequired
 };
 
 export default App;
