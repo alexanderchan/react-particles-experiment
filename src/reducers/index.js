@@ -8,7 +8,6 @@ const Gravity = 0.5,
 
 class Particle {
     id;
-    @observable inUse = false;
     @observable x = 0;
     @observable y = 0;
     @observable vector = [0, 0];
@@ -26,6 +25,7 @@ class ParticleStore {
     @observable tickerStarted = false;
     @observable generateParticles = false;
     @observable mousePos = [null, null];
+    particleIndex = 0;
 
     startTicker() {
         this.tickerStarted = true;
@@ -43,16 +43,12 @@ class ParticleStore {
         transaction(() => {
             for (let i = 0; i < N; i++) {
                 // Recycle particles. This way we can prevent creating / removing ParticleViews all the time.
-                let particle = this.particles.find(p => !p.inUse);
-                if (!particle) {
-                    particle = new Particle(this.particles.length);
-                    this.particles.push(particle);
-                }
-                particle.inUse = true;
+                particle = new Particle(++this.particlesIndex);
                 particle.x = x;
                 particle.y = y;
                 particle.vector = [particle.id%2 ? -randNormal() : randNormal(),
                                 -randNormal2()*3.3];
+                this.particles.push(particle);
             }
         });
     }
@@ -64,16 +60,14 @@ class ParticleStore {
     timeTick() {
         transaction(() => {
             let {svgWidth, svgHeight, particles} = this;
-            particles.forEach((p) => {
-                if (p.inUse) {
-                    let [vx, vy] = p.vector;
-                    p.x += vx;
-                    p.y += vy;
-                    p.vector[1] += Gravity;
-                    if (p.y > svgHeight || p.x < 0 || p.x > svgWidth) {
-                        p.inUse = false;
-                    }
-                }
+            this.particles = particles.filter(p =>
+                !(p.y > svgHeight || p.x < 0 || p.x > svgWidth)
+            );
+            this.particles.forEach(p => {
+                let [vx, vy] = p.vector;
+                p.x += vx;
+                p.y += vy;
+                p.vector[1] += Gravity;
             });
         });
     }
