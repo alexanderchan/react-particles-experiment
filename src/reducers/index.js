@@ -13,7 +13,8 @@ export const particlesStore = observable({
     svgHeight: 600,
     tickerStarted: false,
     generateParticles: false,
-    mousePos: [null, null]
+    mousePos: [null, null],
+    particleIndex: 0
 });
 
 particlesStore.dispatch = function(action) {
@@ -31,17 +32,9 @@ particlesStore.dispatch = function(action) {
                 state.generateParticles = false;
                 break;
             case 'CREATE_PARTICLES':
-                let i;
-                for (i = 0; i < action.N; i++) {
-                    let particle = state.particles.find(p => !p.inUse);
-                    if (!particle) {
-                        particle = { 
-                            id: state.particles.length
-                        };
-                        state.particles.push(particle);
-                    }
-                    extendObservable(particle, {
-                        inUse: true,
+                for (let i = 0; i < action.N; i++) {
+                    state.particles.push({
+                        id: ++state.particleIndex,
                         x: action.x,
                         y: action.y,
                         vector: [particle.id%2 ? -randNormal() : randNormal(),
@@ -54,16 +47,14 @@ particlesStore.dispatch = function(action) {
                 break;
             case 'TIME_TICK':
                 let {svgWidth, svgHeight} = state;
-                state.particles.forEach((p) => {
-                    if (p.inUse) {
-                        let [vx, vy] = p.vector;
-                        p.x += vx;
-                        p.y += vy;
-                        p.vector[1] += Gravity;
-                        if (p.y > svgHeight || p.x < 0 || p.x > svgWidth) {
-                            p.inUse = false;
-                        }
-                    }
+                this.particles = particles.filter(p =>
+                    !(p.y > svgHeight || p.x < 0 || p.x > svgWidth)
+                );
+                this.particles.forEach(p => {
+                    let [vx, vy] = p.vector;
+                    p.x += vx;
+                    p.y += vy;
+                    p.vector[1] += Gravity;
                 });
                 break;
             case 'RESIZE_SCREEN':
