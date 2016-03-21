@@ -1,6 +1,24 @@
+# MobX port of React-Particles-Experiment
+
+This fork is a port of the React-Particles-Experiment by @swizec to MobX.
+It's purpose is mainly to show the difference between different architectural styles. Each style has it's own branch
+
+1. The original [Redux](https://github.com/mweststrate/react-particles-experiment/tree/redux-original) powered implementation
+2. An implementation [MobX and Flux](https://github.com/mweststrate/react-particles-experiment/tree/mobx-flux) style actions and dispatchers. This branch uses mainly plain objects
+3. An implementation with [MobX and MVC](https://github.com/mweststrate/react-particles-experiment/tree/master) like store. Uses classes and decorators extensively.
+
+Diffs: [Redux - MobX Flux](https://github.com/mweststrate/react-particles-experiment/compare/redux-original...mweststrate:mobx-flux) // [Redux - MobX MVC](https://github.com/mweststrate/react-particles-experiment/compare/redux-original...mweststrate:master) // [MobX Flux - MobX MVC](https://github.com/mweststrate/react-particles-experiment/compare/mobx-flux...mweststrate:master)
+
+##  Performance differences
+
+This project isn't intended to compare the performance of Redux and Mobx, it's setup is too simple to do that. But a simple test will reveal that MobX is ~20-30% slower. The reason for this is that the usage `@observer` does simplify the code of this project, but beyond that doesn't do anything for performance, because on each ticks all particles will always be re-rendered, since all of them are moving. However, if only a subset of the particles is updated per tick, MobX performs better then Redux. Roughly 30% faster if only 25% of the particles is updated. This is because MobX doesn't need to shallowly copy the `particles` list on each change and will skip the rendering of the `App(Container)` component, which needs to reinstantiate all of the `ParticleView` components in the Redux approach. The MobX Flux and MobX MVC approaches should not show significant performance differences.
+
+---------
+_(original Readme)_
+
 # Animating with React, Redux, and d3
 
-![Gif](react-particles-experiment/particles-step-5.gif)
+![Gif](particles-step-5.gif)
 
 That's a particle generator. It makes tiny circles fly out of where you click. Hold down your mouse and move around. The particles keep flying out of your cursor.
 
