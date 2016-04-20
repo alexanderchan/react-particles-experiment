@@ -1,4 +1,4 @@
-import {observable, transaction, extendObservable} from "mobx";
+import {observable, transaction} from "mobx";
 
 import d3 from 'd3';
 
